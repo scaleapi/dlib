@@ -62,6 +62,25 @@ double update (
     }
 }
 
+double update_noscale (
+    correlation_tracker& tracker,
+    py::array img
+)
+{
+    if (is_image<unsigned char>(img))
+    {
+        return tracker.update_noscale(numpy_image<unsigned char>(img));
+    }
+    else if (is_image<rgb_pixel>(img))
+    {
+        return tracker.update_noscale(numpy_image<rgb_pixel>(img));
+    }
+    else
+    {
+        throw dlib::error("Unsupported image type, must be 8bit gray or RGB image.");
+    }
+}
+
 double update_guess (
     correlation_tracker& tracker,
     py::array img,
@@ -132,6 +151,13 @@ void bind_correlation_tracker(py::module &m)
                   (i.e. you must have started tracking by calling start_track()) \n\
             ensures \n\
                 - performs: return update(img, get_position())")
+        .def("update_noscale", &::update_noscale, py::arg("image"), "\
+            requires \n\
+                - image is a numpy ndarray containing either an 8bit grayscale or RGB image. \n\
+                - get_position().is_empty() == false \n\
+                  (i.e. you must have started tracking by calling start_track()) \n\
+            ensures \n\
+                - performs: return update_noscale(img, get_position())")
         .def("update", &::update_guess, py::arg("image"), py::arg("guess"), "\
             requires \n\
                 - image is a numpy ndarray containing either an 8bit grayscale or RGB image. \n\
